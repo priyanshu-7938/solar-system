@@ -1,7 +1,7 @@
 pipeline{
   	agent any
 	tools {
-		nodeJS 'nodejs-24-3-0'
+		nodejs 'nodejs-24-3-0'
 	}
 	stages {
 		stage("Installing deps"){
