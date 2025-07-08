@@ -6,7 +6,7 @@ pipeline{
 	stages {
 		stage("Installing deps"){
 			steps{
-				sh '''
+				bat '''
 					node -v
 					npm -v
 				'''
