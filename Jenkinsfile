@@ -9,6 +9,7 @@ pipeline{
 				bat '''
 					node -v
 					npm -v
+					echo "hehe bitch"
 				'''
 			}
 		}
