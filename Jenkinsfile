@@ -5,6 +5,8 @@ pipeline{
 	}
 	environment {
 		MONGO_URI = "mongodb://172.28.254.224:27017/?authSource=admin"
+		MONGO_USERNAME = credentials('mongodb-username')
+		MONGO_PASSWORD = credentials('mongodb-password')
 	}
 	stages{
 		stage("Installign dep"){
@@ -32,8 +34,6 @@ pipeline{
 							--prettyPrint
 							''', odcInstallation: 'OWASP-DepCheck-12'
 						dependencyCheckPublisher failedTotalCritical: 1, pattern: 'dependency-check-report.xml', stopBuild: true
-						junit allowEmptyResults: true, keepProperties: true, testResults: 'dependency-check-junit.xml'
-						publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: './', reportFiles: 'dependency-check-jenkins.html', reportName: '[Dependency-Check-Jenkins] HTML Report', reportTitles: '', useWrapperFileDirectly: true])
 					}
 				}
 			}
@@ -41,11 +41,11 @@ pipeline{
 		stage("Unit Testing"){
 			steps {
 				// this is going to fail regardless of any thing as the db does not have required tables and collections
+				// if we define the credentially globally then we dont need this credentials block to access tin the env.
 				// withCredentials([usernamePassword(credentialsId: 'mongodb-user-pass', passwordVariable: 'MONGO_PASSWORD', usernameVariable: 'MONGO_USERNAME')]) {
 					// bat '''
 						// npm test
 					// '''
-					// junit allowEmptyResults: true, stdioRetention: '' , testResults: 'test-results.xml'
 
                 // }
 				echo "Unit Testing Passed"
@@ -58,7 +58,6 @@ pipeline{
 					// bat '''
 						// npm run coverage
 					// '''
-					// junit allowEmptyResults: true, stdioRetention: '' , testResults: 'test-results.xml'
 
                 // }
 				catchError(buildResult: 'SUCCESS', message: 'Catched an error in code-coverage', stageResult: 'UNSTABLE') {
@@ -66,6 +65,15 @@ pipeline{
 					error "Some error here!"
 				}
 			}
+		}
+	}
+	post{
+		always{
+			junit allowEmptyResults: true, keepProperties: true, testResults: 'dependency-check-junit.xml'
+			publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, icon: '', keepAll: true, reportDir: './', reportFiles: 'dependency-check-jenkins.html', reportName: '[Dependency-Check-Jenkins] HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+			// junit allowEmptyResults: true, stdioRetention: '' , testResults: 'test-results.xml'
+			// junit allowEmptyResults: true, stdioRetention: '' , testResults: 'test-results.xml'
+
 		}
 	}
 }
